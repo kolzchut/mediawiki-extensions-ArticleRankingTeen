@@ -9,5 +9,6 @@ $specialPageAliases = [];
 
 /** English (English) */
 $specialPageAliases['en'] = [
+	'ArticleRanking' =>  [ 'ArticleRanking' ],
 	'ArticleRankingFeedback' => [ 'FeedbackList' ],
 ];

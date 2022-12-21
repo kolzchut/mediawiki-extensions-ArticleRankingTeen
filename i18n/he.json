@@ -3,6 +3,7 @@
 		"authors": [
 		]
 	},
+	"articleranking": "דו\"ח דירוגי עמוד",
 	"ranking-section1-title": "האם העמוד סייע לכם?",
 	"ranking-yes": "כן",
 	"ranking-no": "לא",
@@ -14,9 +15,9 @@
 	"after-vote-button" : "שלח/י",
 	"voting-messages-positive-placeholder":"תודה! רוצה להוסיף משהו?",
 	"voting-messages-negative-placeholder":"חבל. נשמח אם תגידו לנו למה",
-	"ranking-invalid-captcha-title": "שגיאת reCAPTCHA",
-	"ranking-invalid-captcha-keys-message": "מפתחות reCAPTCHA חסרים",
-	"article-ranking-after-vote-failed":"ההודעה לא נשלחה. אנו מתנצלים על תקלה.",
+	"ranking-invalid-captcha-title": "שגיאת CAPTCHA",
+	"ranking-invalid-captcha-keys-message": "מפתחות CAPTCHA חסרים",
+	"article-ranking-after-vote-failed":"ההודעה לא נשלחה. אנו מתנצלים על התקלה.",
 	"article-ranking-after-vote-success":"תודה על המשוב",
 	"article-ranking-after-vote-OK" : "בסדר",
 
@@ -29,6 +30,20 @@
 	"article-ranking-feedbacklist-submit": "סינון",
 	"article-ranking-feedbacklist-no-results": "לא נמצאו תוצאות",
 
+	"articleranking-filter-legend": "סינון",
+	"articleranking-filter-title": "דף",
+	"articleranking-page-title": "דף",
+	"articleranking-sum-negative": "הצבעות שליליות",
+	"articleranking-sum-negative-percent": "%",
+	"articleranking-sum-positive": "הצבעות חיוביות",
+	"articleranking-sum-positive-percent": "%",
+	"articleranking-sum-total": "סה\"כ הצבעות",
+	"articleranking-filter-min-ranknigs": "לפחות מס' זה של הצבעות",
+	"articleranking-filter-content-area": "תחום תוכן",
+	"articleranking-tableheader-content-area": "תחום תוכן",
+
+	"right-articleranking-view-report": "צפיה בדו\" דירוגי עמוד",
+	"action-articleranking-view-report": "לצפות בדו\"ח דירוגי עמוד",
 	"right-upload": "צפיה במשובים מדירוגי עמוד",
 	"action-viewfeedback": "לצפות במשובים מדירוגי עמוד"
 }

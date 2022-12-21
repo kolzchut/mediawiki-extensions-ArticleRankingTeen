@@ -1,6 +1,6 @@
 <div class="ranking-section-wrapper">
 	<div class="ranking-section hidden-print noprint">
-		<div id="voting-section1" class="sub-section sub-section1">
+		<div class="sub-section sub-section1">
 			<h2 class="sub-section-header">{{ section1title }}</h2>
 			<div class="sub-section-content">
 				<div class="buttons">
@@ -36,15 +36,16 @@
 				</div>
 			{{/is-after-vote-form}}
 			{{#is-captcha-enabled}}
-				<div class="g-recaptcha"
-					 data-sitekey="{{ siteKey }}"
-					 data-callback="verifyRankingCaptcha"
-					 data-error-callback="handleRankingCaptchaError"
-					 data-size="invisible">
-				</div>
+			<div class="h-captcha"
+				 data-sitekey="{{ siteKey }}"
+				 data-size="invisible"
+				 data-callback="verifyRankingCaptcha"
+				 data-error-callback="handleRankingCaptchaError"
+				 data-close-callback="handleRankingCaptchaError"
+			></div>
 			{{/is-captcha-enabled}}
 		</div>
-		<div id="voting-section2" class="sub-section sub-section2">
+		<div class="sub-section sub-section2">
 			<h2 class="sub-section-header">{{ section2title }}</h2>
 			<div class="sub-section-content">
 				<a class="whatsapp-link" href="whatsapp://send?text={{whatsapp-share-text}}" data-action="share/whatsapp/share">{{{whatsapp-share-label}}}</a>
@@ -63,5 +64,3 @@
 		</div>
 	{{/is-after-vote-form}}
 </div>
-
-

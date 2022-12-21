@@ -5,72 +5,35 @@ use Hooks;
 use MediaWiki\MediaWikiServices;
 use TemplateParser;
 
-class ArticleRanking {
+class Vote {
 
 	/**
 	 * Save vote for a certain page ID
 	 *
-	 * @param int $page_id
+	 * @param Title $title
 	 * @param int $vote 1 for positive vote, 0 for negative vote
+	 *
 	 * @return bool
 	 */
-	public static function saveVote( int $page_id, int $vote ) {
-		$dbw = wfGetDB( DB_MASTER );
-
-		$votes = $dbw->select( 'article_rankings',
-			[ '*' ],
-			[ 'page_id' => $page_id ]
-		);
-
-		$ranking = $votes->fetchObject();
-
-		if ( $ranking ) {
-			$positiveVotes = $ranking->positive_votes;
-			$totalVotes    = $ranking->total_votes;
-
-			if ( $vote === 1 ) {
-				$positiveVotes = $positiveVotes + 1;
-			} else {
-				$totalVotes = $totalVotes + 1;
-			}
-
-			$result = $dbw->update( 'article_rankings',
-				[
-					'positive_votes' => $positiveVotes,
-					'total_votes'    => $totalVotes
-				],
-				[
-					'page_id' => $page_id
-				]
-			);
-		} else {
-			$result = $dbw->insert( 'article_rankings', [
-				'positive_votes' => $vote,
-				'total_votes'    => 1,
-				'page_id'        => $page_id
-			] );
+	public static function saveVote( Title $title, int $vote ) {
+		if ( !in_array( $vote, [-1, 1] ) ) {
+			throw new InvalidArgumentException( '$vote can only be -1 or 1' );
+		}
+		if ( !$title->exists() ) {
+			throw new InvalidArgumentException( "$title does not exist" );
 		}
 
-		return (bool)$result;
-	}
+		$requestContext = RequestContext::getMain();
+		$dbw = wfGetDB( DB_PRIMARY );
 
-	/**
-	 * Save vote nessage for a certain page ID
-	 *
-	 * @param int $page_id
-	 * @param int $vote 1 for positive vote, 0 for negative vote
-	 * @param string $message message for vote
-	 * @return bool
-	 */
-	public static function saveVoteMessage( int $page_id, int $vote, string $message ) {
-		$dbw = wfGetDB( DB_MASTER );
-		$fields = [
-				'positive_or_negative' => $vote,
-				'votes_messages'    => $message,
-				'votes_messages_page_id'        => $page_id,
-				'votes_timestamp'        => $dbw->timestamp( wfTimestampNow() )
-			];
-		$result = $dbw->insert( 'article_rankings_votes_messages', $fields );
+		$result = $dbw->insert( 'article_rankings2', [
+			'ranking_timestamp' => $dbw->timestamp(),
+			'ranking_value' => $vote,
+			'ranking_page_id' => $title->getArticleID(),
+			'ranking_ip' => $requestContext->getRequest()->getIP(),
+			'ranking_actor' => $requestContext->getUser()->getActorId()
+		] );
+
 		return (bool)$result;
 	}
 
@@ -81,26 +44,46 @@ class ArticleRanking {
 	 * @return array|bool an array that includes the number of positive votes, total votes and
 	 *                    total rank percentage, or false
 	 */
-	public static function getRank( int $page_id ) {
+	public static function getRankingTotals( int $page_id ) {
 		$dbr = wfGetDB( DB_REPLICA );
 
-		$result = $dbr->select(
-			'article_rankings',
-			[ '*' ],
-			[ 'page_id' => $page_id ]
+		$positiveVotes = $dbr->selectField(
+			'article_rankings2',
+			'SUM(ranking_value)',
+			[
+				'ranking_page_id' => $page_id,
+				'ranking_value > 0'
+			]
+		);
+		$negativeVotes = $dbr->selectField(
+			'article_rankings2',
+			'SUM(ranking_value)',
+			[
+				'ranking_page_id' => $page_id,
+				'ranking_value' => -1
+			]
 		);
 
-		$result = $result->fetchRow();
-
-		if ( !$result ) {
+		// No results
+		if ( $positiveVotes === false && $negativeVotes === false ) {
 			return false;
 		}
 
+		$totalVotes = $positiveVotes + $negativeVotes;
+
 		return [
-			'positive_votes' => $result[ 'positive_votes' ],
-			'total_votes'    => $result[ 'total_votes' ],
-			'rank'           => ( (int)$result[ 'positive_votes' ] / (int)$result[ 'total_votes' ] ) * 100
+			'positive_votes' => $positiveVotes,
+			'negative_votes' => $negativeVotes,
+			'total_votes'    => $totalVotes,
+			'rank'           => ( $positiveVotes / $totalVotes ) * 100
 		];
+	}
+
+	/**
+	 * @see getRankingTotals()
+	 */
+	public static function getRank( int $page_id ) {
+		return self::getRankingTotals( $page_id );
 	}
 
 	/**
@@ -143,6 +126,26 @@ class ArticleRanking {
 
 	private static function getMsgForContent( $msgName ) {
 		return wfMessage( $msgName )->inContentLanguage()->text();
+	}
+
+	/**
+	 * Save vote message for a certain page ID
+	 *
+	 * @param int $page_id
+	 * @param int $vote 1 for positive vote, 0 for negative vote
+	 * @param string $message message for vote
+	 * @return bool
+	 */
+	public static function saveVoteMessage( int $page_id, int $vote, string $message ) {
+		$dbw = wfGetDB( DB_MASTER );
+		$fields = [
+				'positive_or_negative' => $vote,
+				'votes_messages'    => $message,
+				'votes_messages_page_id'        => $page_id,
+				'votes_timestamp'        => $dbw->timestamp( wfTimestampNow() )
+			];
+		$result = $dbw->insert( 'article_rankings_votes_messages', $fields );
+		return (bool)$result;
 	}
 
 	public static function isCaptchaEnabled() {
