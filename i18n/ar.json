@@ -14,8 +14,8 @@
 	"after-vote-button" : "إرسل/ي",
 	"voting-messages-positive-placeholder":"شكراً، تودون إضافة شيء؟",
 	"voting-messages-negative-placeholder":"خسارة. من المهم أن نعرف السبب",
-	"ranking-invalid-captcha-title": "שגיאת reCAPTCHA",
-	"ranking-invalid-captcha-keys-message": "מפתחות reCAPTCHA חסרים",
+	"ranking-invalid-captcha-title": "שגיאת CAPTCHA",
+	"ranking-invalid-captcha-keys-message": "מפתחות CAPTCHA חסרים",
 	"article-ranking-after-vote-failed":"لم يتم إرسال الرسالة.نعتذر عن الخلل.",
 	"article-ranking-after-vote-success":"شكراً لك",
 	"article-ranking-after-vote-OK" : "جيد"

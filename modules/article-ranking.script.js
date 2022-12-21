@@ -7,13 +7,13 @@
 		$btns: $( '.ranking-section .sub-section1 .ranking-btn' ),
 		$statusIcon: $( '<i>' ).addClass( 'fa fa-spinner fa-spin' ),
 		$votingMessages: $( '.ranking-section .voting-messages' ),
+
 		vote: function ( captchaToken ) {
-			mw.ranking.captchaToken = captchaToken;
 			return new mw.Api().postWithToken( 'csrf', {
 				action: 'rank-vote',
-				id: mw.config.get( 'wgArticleId' ),
+				pageid: mw.config.get( 'wgArticleId' ),
 				captchaToken: captchaToken || null,
-				vote: Number( this.positiveVote )
+				vote: this.positiveVote ? 1 : -1
 			} ).fail( function () {
 				mw.ranking.informFailedVote();
 			} ).done( function ( response ) {
@@ -66,12 +66,13 @@
 
 	$( function () {
 		$( mw.ranking.$btns ).on( 'click', function () {
+			mw.ranking.$votingMessages.hide(); // In case we already displayed a message before
 			mw.ranking.positiveVote = $( this ).hasClass( 'yes' );
 			mw.ranking.$btns.attr( 'disabled', true );
 			// $( this ).prepend( mw.ranking.$statusIcon );
 			$( this ).addClass( 'selected on-call' );
 			if ( mw.ranking.config.isCaptchaEnabled === true ) {
-				grecaptcha.execute();
+				hcaptcha.execute();
 			} else {
 				mw.ranking.vote();
 			}
