@@ -1,9 +1,13 @@
 <?php
+
 namespace MediaWiki\Extension\ArticleRanking;
 
+use InvalidArgumentException;
 use Hooks;
 use MediaWiki\MediaWikiServices;
+use RequestContext;
 use TemplateParser;
+use Title;
 
 class Vote {
 
