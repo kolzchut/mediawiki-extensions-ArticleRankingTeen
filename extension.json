@@ -20,7 +20,7 @@
 	"APIModules": {
 		"rank-vote": "MediaWiki\\Extension\\ArticleRanking\\Api\\ApiVote",
 		"rank-votes": "MediaWiki\\Extension\\ArticleRanking\\Api\\ApiGetVotes",
-		"rank-vote-message": "MediaWiki\\Extension\\ArticleRanking\\ApiVoteMessage"
+		"rank-vote-message": "MediaWiki\\Extension\\ArticleRanking\\Api\\ApiVoteMessage"
 	},
 	"ResourceFileModulePaths": {
 		"localBasePath": "",

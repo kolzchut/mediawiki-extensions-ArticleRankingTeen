@@ -1,8 +1,10 @@
 <?php
-namespace MediaWiki\Extension\ArticleRanking;
+namespace MediaWiki\Extension\ArticleRanking\Api;
 
 use ApiBase;
 use ApiMain;
+use MediaWiki\Extension\ArticleRanking\Captcha;
+use MediaWiki\Extension\ArticleRanking\Vote;
 
 class ApiVoteMessage extends ApiBase {
 
@@ -29,7 +31,7 @@ class ApiVoteMessage extends ApiBase {
 		return [
 			'captchaToken' => [
 				ApiBase::PARAM_TYPE => 'string',
-				ApiBase::PARAM_REQUIRED => ArticleRanking::isCaptchaEnabled()
+				ApiBase::PARAM_REQUIRED => Vote::isCaptchaEnabled()
 			],
 			'id' => [
 				ApiBase::PARAM_TYPE => 'integer',
@@ -56,8 +58,8 @@ class ApiVoteMessage extends ApiBase {
 		$message    = $params[ 'message' ];
 		$output  = [ 'success' => false ];
 
-		if ( !ArticleRanking::isCaptchaEnabled() || ARCaptcha::verifyToken( $this->secret, $captchaToken ) ) {
-			$result = ArticleRanking::saveVoteMessage( $page_id, $vote, $message );
+		if ( !Vote::isCaptchaEnabled() || Captcha::verifyToken( $this->secret, $captchaToken ) ) {
+			$result = Vote::saveVoteMessage( $page_id, $vote, $message );
 			$output[ 'success' ] = (int)$result;
 		}
 
