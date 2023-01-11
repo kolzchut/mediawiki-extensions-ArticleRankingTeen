@@ -17,7 +17,7 @@
 			} ).fail( function () {
 				mw.ranking.informFailedVote();
 			} ).done( function ( response ) {
-				if ( response.ranking.success ) {
+				if ( response.success ) {
 					mw.ranking.getClickedBtn().removeClass( 'on-call' ).addClass( 'after-success-call' );
 					mw.ranking.setMessageSuccess( Number( mw.ranking.positiveVote ) );
 					mw.ranking.trackEvent( 'vote', mw.ranking.positiveVote ? 'yes' : 'no' );
