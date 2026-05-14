@@ -1,6 +1,9 @@
 {
 	"name": "ArticleRankingTeen",
-	"version": "2.0.1",
+	"version": "2.1.0",
+	"requires": {
+		"MediaWiki": ">= 1.43"
+	},
 	"author": [
 		"Tal Koren (Interjet, Kol Zchut)",
 		"Itschak Krumbein (OpenFox)",
@@ -54,10 +57,16 @@
 			"dependencies": ["ext.wr.ShareBar.js", "mediawiki.Uri"]
 		}
 	},
+	"HookHandlers": {
+		"main": {
+			"class": "MediaWiki\\Extension\\ArticleRanking\\Hooks",
+			"services": [ "MainConfig" ]
+		}
+	},
 	"Hooks": {
-		"BeforePageDisplay": "MediaWiki\\Extension\\ArticleRanking\\Hooks::onBeforePageDisplay",
-		"LoadExtensionSchemaUpdates": "MediaWiki\\Extension\\ArticleRanking\\Hooks::onLoadExtensionSchemaUpdates",
-		"ResourceLoaderGetConfigVars": "MediaWiki\\Extension\\ArticleRanking\\Hooks::onResourceLoaderGetConfigVars"
+		"BeforePageDisplay": "main",
+		"LoadExtensionSchemaUpdates": "main",
+		"ResourceLoaderGetConfigVars": "main"
 	},
 	"MessagesDirs": {
 		"ArticleRanking": [
@@ -79,21 +88,22 @@
 	},
 	"config": {
 		"ArticleRankingConfig": {
-			"changerequest": {
-				"url": "/forms/ChangeRequest/",
-				"width": 750,
-				"height": 650
-			},
-			"trackClicks": true
+			"value": {
+				"changerequest": {
+					"url": "/forms/ChangeRequest/",
+					"width": 750,
+					"height": 650
+				},
+				"trackClicks": true
+			}
 		},
 		"ArticleRankingCaptcha": {
-			"siteKey": "",
-			"secret": ""
+			"value": { "siteKey": "", "secret": "" }
 		},
-		"ArticleRankingTemplatePath": false,
-		"ArticleRankingTemplateFileName": "voting",
-		"ArticleRankingAddAfterVote": false,
-		"ArticleRankingAddChangeRequest": true
+		"ArticleRankingTemplatePath":      { "value": false },
+		"ArticleRankingTemplateFileName":  { "value": "voting" },
+		"ArticleRankingAddAfterVote":      { "value": false },
+		"ArticleRankingAddChangeRequest":  { "value": true }
 	},
-	"manifest_version": 1
+	"manifest_version": 2
 }

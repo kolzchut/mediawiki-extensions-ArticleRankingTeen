@@ -3,157 +3,152 @@
 namespace MediaWiki\Extension\ArticleRanking;
 
 use InvalidArgumentException;
-use Hooks;
+use MediaWiki\Context\RequestContext;
+use MediaWiki\Html\TemplateParser;
 use MediaWiki\MediaWikiServices;
-use RequestContext;
-use TemplateParser;
-use Title;
+use MediaWiki\Title\Title;
 
 class Vote {
 
 	/**
-	 * Save vote for a certain page ID
-	 *
-	 * @param Title $title
-	 * @param int $vote 1 for positive vote, 0 for negative vote
+	 * Save a vote (+1 or -1) for the given page.
 	 *
 	 * @return bool
 	 */
 	public static function saveVote( Title $title, int $vote ) {
-		if ( !in_array( $vote, [-1, 1] ) ) {
+		if ( !in_array( $vote, [ -1, 1 ], true ) ) {
 			throw new InvalidArgumentException( '$vote can only be -1 or 1' );
 		}
 		if ( !$title->exists() ) {
 			throw new InvalidArgumentException( "$title does not exist" );
 		}
 
-		$requestContext = RequestContext::getMain();
-		$dbw = wfGetDB( DB_PRIMARY );
+		$ctx = RequestContext::getMain();
+		$dbw = MediaWikiServices::getInstance()->getConnectionProvider()->getPrimaryDatabase();
 
-		$result = $dbw->insert( 'article_rankings2', [
-			'ranking_timestamp' => $dbw->timestamp(),
-			'ranking_value' => $vote,
-			'ranking_page_id' => $title->getArticleID(),
-			'ranking_ip' => $requestContext->getRequest()->getIP(),
-			'ranking_actor' => $requestContext->getUser()->getActorId()
-		] );
+		$dbw->newInsertQueryBuilder()
+			->insertInto( 'article_rankings2' )
+			->row( [
+				'ranking_timestamp' => $dbw->timestamp(),
+				'ranking_value'     => $vote,
+				'ranking_page_id'   => $title->getArticleID(),
+				'ranking_ip'        => $ctx->getRequest()->getIP(),
+				'ranking_actor'     => $ctx->getUser()->getActorId(),
+			] )
+			->caller( __METHOD__ )
+			->execute();
 
-		return (bool)$result;
+		return true;
 	}
 
 	/**
-	 * Get rank for a specific page ID
+	 * Get vote totals for a page.
 	 *
-	 * @param int $page_id
-	 * @return array|bool an array that includes the number of positive votes, total votes and
-	 *                    total rank percentage, or false
+	 * @return array{positive_votes:int,negative_votes:int,total_votes:int,rank:float}|false
 	 */
 	public static function getRankingTotals( int $page_id ) {
-		$dbr = wfGetDB( DB_REPLICA );
+		$dbr = MediaWikiServices::getInstance()->getConnectionProvider()->getReplicaDatabase();
 
-		$positiveVotes = $dbr->selectField(
-			'article_rankings2',
-			'SUM(ranking_value)',
-			[
-				'ranking_page_id' => $page_id,
-				'ranking_value > 0'
-			]
-		);
-		$negativeVotes = $dbr->selectField(
-			'article_rankings2',
-			'SUM(ranking_value)',
-			[
-				'ranking_page_id' => $page_id,
-				'ranking_value' => -1
-			]
-		);
+		$positiveVotes = $dbr->newSelectQueryBuilder()
+			->select( 'SUM(ranking_value)' )
+			->from( 'article_rankings2' )
+			->where( [ 'ranking_page_id' => $page_id, 'ranking_value > 0' ] )
+			->caller( __METHOD__ )
+			->fetchField();
+		$negativeVotes = $dbr->newSelectQueryBuilder()
+			->select( 'SUM(ranking_value)' )
+			->from( 'article_rankings2' )
+			->where( [ 'ranking_page_id' => $page_id, 'ranking_value' => -1 ] )
+			->caller( __METHOD__ )
+			->fetchField();
 
-		// No results
 		if ( $positiveVotes === false && $negativeVotes === false ) {
 			return false;
 		}
 
-		$totalVotes = $positiveVotes + $negativeVotes;
+		$totalVotes = (int)$positiveVotes + (int)$negativeVotes;
 
 		return [
-			'positive_votes' => $positiveVotes,
-			'negative_votes' => $negativeVotes,
+			'positive_votes' => (int)$positiveVotes,
+			'negative_votes' => (int)$negativeVotes,
 			'total_votes'    => $totalVotes,
-			'rank'           => ( $positiveVotes / $totalVotes ) * 100
+			'rank'           => $totalVotes !== 0 ? ( (int)$positiveVotes / $totalVotes ) * 100 : 0.0,
 		];
 	}
 
-	/**
-	 * @see getRankingTotals()
-	 */
 	public static function getRank( int $page_id ) {
 		return self::getRankingTotals( $page_id );
 	}
 
 	/**
-	 * @param array $additionalParams
+	 * Render the voting widget for an article. Called by KolzchutYoungSkin's
+	 * voting-widget parser function.
 	 *
-	 * @return string
-	 * @throws \ConfigException
-	 * @throws \FatalError
-	 * @throws \MWException
+	 * @return string HTML
 	 */
-	public static function createRankingSection( $additionalParams = [] ) {
-		$conf = MediaWikiServices::getInstance()->getMainConfig();
-		$wgArticleRankingCaptcha = $conf->get( 'ArticleRankingCaptcha' );
-		$wgArticleRankingTemplateFileName = $conf->get( 'ArticleRankingTemplateFileName' );
-		$wgArticleRankingTemplatePath = $conf->get( 'ArticleRankingTemplatePath' );
-		$wgArticleRankingTemplatePath = $wgArticleRankingTemplatePath ? $wgArticleRankingTemplatePath : __DIR__ . '/templates';
-		$templateParser = new TemplateParser( $wgArticleRankingTemplatePath );
+	public static function createRankingSection( array $additionalParams = [] ): string {
+		$services = MediaWikiServices::getInstance();
+		$conf     = $services->getMainConfig();
+
+		$captchaCfg     = $conf->get( 'ArticleRankingCaptcha' );
+		$templateFile   = $conf->get( 'ArticleRankingTemplateFileName' );
+		$templatePath   = $conf->get( 'ArticleRankingTemplatePath' ) ?: __DIR__ . '/templates';
+		$templateParser = new TemplateParser( $templatePath );
+
 		$params = [
-			'section1title'  => self::getMsgForContent( 'ranking-section1-title' ),
-			'yes'            => self::getMsgForContent( 'ranking-yes' ),
-			'no'             => self::getMsgForContent( 'ranking-no' ),
-			'section2title'  => self::getMsgForContent( 'ranking-section2-title' ),
-			'ranking-vote-success'  => self::getMsgForContent( 'ranking-vote-success' ),
-			'ranking-vote-fail'  => self::getMsgForContent( 'ranking-vote-fail' ),
-			'proposeChanges' => self::getMsgForContent( 'ranking-propose-change' ),
+			'section1title'                        => self::getMsgForContent( 'ranking-section1-title' ),
+			'yes'                                  => self::getMsgForContent( 'ranking-yes' ),
+			'no'                                   => self::getMsgForContent( 'ranking-no' ),
+			'section2title'                        => self::getMsgForContent( 'ranking-section2-title' ),
+			'ranking-vote-success'                 => self::getMsgForContent( 'ranking-vote-success' ),
+			'ranking-vote-fail'                    => self::getMsgForContent( 'ranking-vote-fail' ),
+			'proposeChanges'                       => self::getMsgForContent( 'ranking-propose-change' ),
 			'voting-messages-positive-placeholder' => self::getMsgForContent( 'voting-messages-positive-placeholder' ),
 			'voting-messages-negative-placeholder' => self::getMsgForContent( 'voting-messages-negative-placeholder' ),
-			'is-captcha-enabled' => self::isCaptchaEnabled(),
-			'is-after-vote-form' => $conf->get( 'ArticleRankingAddAfterVote' ),
-			'after-voting-button' => self::getMsgForContent( 'after-vote-button' ) . '<i class="fas fa-chevron-left"></i>',
-			'siteKey'        => $wgArticleRankingCaptcha[ 'siteKey' ]
+			'is-captcha-enabled'                   => self::isCaptchaEnabled(),
+			'is-after-vote-form'                   => $conf->get( 'ArticleRankingAddAfterVote' ),
+			'after-voting-button'                  => self::getMsgForContent( 'after-vote-button' )
+				. '<i class="fas fa-chevron-left"></i>',
+			'siteKey'                              => $captchaCfg['siteKey'] ?? '',
 		];
-		$continue = Hooks::run( 'ArticleRankingTemplateParams', [ &$params , $additionalParams ] );
-		if ( $continue ) {
-			return $templateParser->processTemplate( $wgArticleRankingTemplateFileName, $params );
-		}
 
+		$continue = $services->getHookContainer()->run(
+			'ArticleRankingTemplateParams',
+			[ &$params, $additionalParams ]
+		);
+		if ( $continue ) {
+			return $templateParser->processTemplate( $templateFile, $params );
+		}
 		return '';
 	}
 
-	private static function getMsgForContent( $msgName ) {
+	private static function getMsgForContent( string $msgName ): string {
 		return wfMessage( $msgName )->inContentLanguage()->text();
 	}
 
 	/**
-	 * Save vote message for a certain page ID
+	 * Save a free-form vote message.
 	 *
-	 * @param int $page_id
-	 * @param int $vote 1 for positive vote, 0 for negative vote
-	 * @param string $message message for vote
 	 * @return bool
 	 */
 	public static function saveVoteMessage( int $page_id, int $vote, string $message ) {
-		$dbw = wfGetDB( DB_MASTER );
-		$fields = [
-				'positive_or_negative' => $vote,
-				'votes_messages'    => $message,
-				'votes_messages_page_id'        => $page_id,
-				'votes_timestamp'        => $dbw->timestamp( wfTimestampNow() )
-			];
-		$result = $dbw->insert( 'article_rankings_votes_messages', $fields );
-		return (bool)$result;
+		$dbw = MediaWikiServices::getInstance()->getConnectionProvider()->getPrimaryDatabase();
+
+		$dbw->newInsertQueryBuilder()
+			->insertInto( 'article_rankings_votes_messages' )
+			->row( [
+				'positive_or_negative'   => $vote,
+				'votes_messages'         => $message,
+				'votes_messages_page_id' => $page_id,
+				'votes_timestamp'        => $dbw->timestamp( wfTimestampNow() ),
+			] )
+			->caller( __METHOD__ )
+			->execute();
+		return true;
 	}
 
-	public static function isCaptchaEnabled() {
-		global $wgArticleRankingCaptcha;
-		return ( $wgArticleRankingCaptcha[ 'secret' ] && $wgArticleRankingCaptcha[ 'siteKey' ] );
+	public static function isCaptchaEnabled(): bool {
+		$cfg = MediaWikiServices::getInstance()->getMainConfig()->get( 'ArticleRankingCaptcha' );
+		return !empty( $cfg['secret'] ) && !empty( $cfg['siteKey'] );
 	}
 }
