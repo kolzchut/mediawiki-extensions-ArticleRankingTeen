@@ -61,11 +61,14 @@
 		"main": {
 			"class": "MediaWiki\\Extension\\ArticleRanking\\Hooks",
 			"services": [ "MainConfig" ]
+		},
+		"installer": {
+			"class": "MediaWiki\\Extension\\ArticleRanking\\InstallerHooks"
 		}
 	},
 	"Hooks": {
 		"BeforePageDisplay": "main",
-		"LoadExtensionSchemaUpdates": "main",
+		"LoadExtensionSchemaUpdates": "installer",
 		"ResourceLoaderGetConfigVars": "main"
 	},
 	"MessagesDirs": {

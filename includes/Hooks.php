@@ -4,12 +4,10 @@ namespace MediaWiki\Extension\ArticleRanking;
 
 use MediaWiki\Config\Config;
 use MediaWiki\Hook\BeforePageDisplayHook;
-use MediaWiki\Installer\Hook\LoadExtensionSchemaUpdatesHook;
 use MediaWiki\ResourceLoader\Hook\ResourceLoaderGetConfigVarsHook;
 
 class Hooks implements
 	BeforePageDisplayHook,
-	LoadExtensionSchemaUpdatesHook,
 	ResourceLoaderGetConfigVarsHook
 {
 	public function __construct(
@@ -39,18 +37,4 @@ class Hooks implements
 		$vars['wgArticleRankingConfig']['isCaptchaEnabled'] = Captcha::isEnabled();
 	}
 
-	public function onLoadExtensionSchemaUpdates( $updater ) {
-		$updater->addExtensionTable(
-			'article_rankings2',
-			__DIR__ . '/../sql/ArticleRankingsNewTableFormat.2022-03-29.sql'
-		);
-		$updater->dropExtensionTable(
-			'article_rankings',
-			__DIR__ . '/../sql/ArticleRankingMigrateDataFromOldTable.2022-04-12.sql'
-		);
-		$updater->addExtensionTable(
-			'article_rankings_votes_messages',
-			__DIR__ . '/../sql/ArticleRankingsVoteMessages.sql'
-		);
-	}
 }
