@@ -11,7 +11,11 @@ use MediaWiki\Title\Title;
 class Vote {
 
 	/**
-	 * Save a vote (+1 or -1) for the given page.
+	 * Save (or update) the current voter's vote for a page.
+	 *
+	 * One live vote per identity per page: a repeat vote replaces the prior
+	 * value (last-wins) rather than accumulating a new row, which is what let
+	 * the endpoint be ballot-stuffed. See ArticleRanking#8.
 	 *
 	 * @return bool
 	 */
@@ -23,22 +27,48 @@ class Vote {
 			throw new InvalidArgumentException( "$title does not exist" );
 		}
 
-		$ctx = RequestContext::getMain();
 		$dbw = MediaWikiServices::getInstance()->getConnectionProvider()->getPrimaryDatabase();
 
 		$dbw->newInsertQueryBuilder()
 			->insertInto( 'article_rankings2' )
 			->row( [
-				'ranking_timestamp' => $dbw->timestamp(),
-				'ranking_value'     => $vote,
 				'ranking_page_id'   => $title->getArticleID(),
-				'ranking_ip'        => $ctx->getRequest()->getIP(),
-				'ranking_actor'     => $ctx->getUser()->getActorId(),
+				'ranking_voter_key' => self::getVoterKey(),
+				'ranking_value'     => $vote,
+				'ranking_timestamp' => $dbw->timestamp(),
+			] )
+			->onDuplicateKeyUpdate()
+			->uniqueIndexFields( [ 'ranking_page_id', 'ranking_voter_key' ] )
+			->set( [
+				'ranking_value'     => $vote,
+				'ranking_timestamp' => $dbw->timestamp(),
 			] )
 			->caller( __METHOD__ )
 			->execute();
 
 		return true;
+	}
+
+	/**
+	 * A stable, pseudonymous identifier for the current voter, used to enforce
+	 * one live vote per identity per page.
+	 *
+	 * Registered users key by user id; anonymous users key by a keyed hash of
+	 * their IP — the HMAC secret is $wgSecretKey, which lives outside this
+	 * table, so a DB-only compromise cannot recover the address. Deliberately
+	 * does NOT call getActorId(), to keep anonymous voting decoupled from
+	 * MediaWiki's actor / temporary-account machinery.
+	 *
+	 * @return string
+	 */
+	private static function getVoterKey(): string {
+		$ctx  = RequestContext::getMain();
+		$user = $ctx->getUser();
+		if ( $user->isRegistered() ) {
+			return 'u:' . $user->getId();
+		}
+		$secret = MediaWikiServices::getInstance()->getMainConfig()->get( 'SecretKey' );
+		return 'ip:' . hash_hmac( 'sha256', $ctx->getRequest()->getIP(), $secret );
 	}
 
 	/**
