@@ -58,7 +58,7 @@ class ApiVoteMessage extends ApiBase {
 		$message    = $params[ 'message' ];
 		$output  = [ 'success' => false ];
 
-		if ( !Vote::isCaptchaEnabled() || Captcha::verifyToken( $this->secret, $captchaToken ) ) {
+		if ( !Vote::isCaptchaEnabled() || Captcha::verifyToken( $captchaToken ) ) {
 			$result = Vote::saveVoteMessage( $page_id, $vote, $message );
 			$output[ 'success' ] = (int)$result;
 		}

@@ -36,12 +36,16 @@
 				</div>
 			{{/is-after-vote-form}}
 			{{#is-captcha-enabled}}
-			<div class="h-captcha"
+			<div class="cf-turnstile"
 				 data-sitekey="{{ siteKey }}"
-				 data-size="invisible"
+				 data-cdata="articleranking-teen"
+				 data-language="{{ language }}"
+				 data-execution="execute"
+				 data-appearance="interaction-only"
 				 data-callback="verifyRankingCaptcha"
 				 data-error-callback="handleRankingCaptchaError"
-				 data-close-callback="handleRankingCaptchaError"
+				 data-expired-callback="handleRankingCaptchaError"
+				 data-timeout-callback="handleRankingCaptchaError"
 			></div>
 			{{/is-captcha-enabled}}
 		</div>

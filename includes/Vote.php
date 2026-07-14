@@ -110,6 +110,8 @@ class Vote {
 			'after-voting-button'                  => self::getMsgForContent( 'after-vote-button' )
 				. '<i class="fas fa-chevron-left"></i>',
 			'siteKey'                              => $captchaCfg['siteKey'] ?? '',
+			// Explicit widget language (he/ar) rather than browser auto-detect.
+			'language'                             => RequestContext::getMain()->getLanguage()->getCode(),
 		];
 
 		$continue = $services->getHookContainer()->run(
