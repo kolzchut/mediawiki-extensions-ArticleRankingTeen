@@ -12,17 +12,34 @@ use MediaWiki\Installer\Hook\LoadExtensionSchemaUpdatesHook;
  */
 class InstallerHooks implements LoadExtensionSchemaUpdatesHook {
 	public function onLoadExtensionSchemaUpdates( $updater ) {
+		$dir = __DIR__ . '/../sql';
+
 		$updater->addExtensionTable(
 			'article_rankings2',
-			__DIR__ . '/../sql/ArticleRankingsNewTableFormat.2022-03-29.sql'
+			"$dir/ArticleRankingsNewTableFormat.2022-03-29.sql"
 		);
 		$updater->dropExtensionTable(
 			'article_rankings',
-			__DIR__ . '/../sql/ArticleRankingMigrateDataFromOldTable.2022-04-12.sql'
+			"$dir/ArticleRankingMigrateDataFromOldTable.2022-04-12.sql"
 		);
 		$updater->addExtensionTable(
 			'article_rankings_votes_messages',
-			__DIR__ . '/../sql/ArticleRankingsVoteMessages.sql'
+			"$dir/ArticleRankingsVoteMessages.sql"
+		);
+
+		// Per-identity dedup: add the voter key, then the unique index that
+		// enforces one live vote per (page, identity). See ArticleRanking#8.
+		// On fresh installs the base table already carries both, so these are
+		// no-ops; they only fire on existing installs.
+		$updater->addExtensionField(
+			'article_rankings2',
+			'ranking_voter_key',
+			"$dir/patch-add-voter-key.sql"
+		);
+		$updater->addExtensionIndex(
+			'article_rankings2',
+			'ranking_voter_dedup',
+			"$dir/patch-add-voter-dedup-index.sql"
 		);
 	}
 }
