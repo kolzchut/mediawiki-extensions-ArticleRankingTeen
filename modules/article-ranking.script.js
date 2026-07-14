@@ -72,7 +72,10 @@
 			// $( this ).prepend( mw.ranking.$statusIcon );
 			$( this ).addClass( 'selected on-call' );
 			if ( mw.ranking.config.isCaptchaEnabled === true ) {
-				hcaptcha.execute();
+				// Turnstile widget uses data-execution="execute"; kick off the
+				// (invisible-style) challenge, which calls verifyRankingCaptcha
+				// with the token on success.
+				turnstile.execute( document.querySelector( '.cf-turnstile' ) );
 			} else {
 				mw.ranking.vote();
 			}

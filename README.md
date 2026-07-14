@@ -4,9 +4,11 @@
 
 The purpose of this extension is to let users rank certain articles.
 
-It can be used with or without a captcha; the captcha used is Google's
-[Invisible Recaptcha](https://developers.google.com/recaptcha/docs/invisible),
-which requires a site key and a secret key provided by Google.
+It can be used with or without a captcha; the captcha used is
+[Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/) in
+invisible-style ("execute") mode, which requires a site key and a secret key.
+On the Kol-Zchut platform one shared widget is used, with this service
+identified by the `cData` value `articleranking-teen`.
 
 One (smaller) part of this extension is used to launch an external
 change proposal form. This is dependant on extension:WRShareBar.
