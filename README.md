@@ -10,9 +10,6 @@ invisible-style ("execute") mode, which requires a site key and a secret key.
 On the Kol-Zchut platform one shared widget is used, with this service
 identified by the `cData` value `articleranking-teen`.
 
-One (smaller) part of this extension is used to launch an external
-change proposal form. This is dependant on extension:WRShareBar.
-
 ## Configuration
 
 | Main Key                 | sub-key                | default                 | description
