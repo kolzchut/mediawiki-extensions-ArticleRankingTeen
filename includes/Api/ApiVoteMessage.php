@@ -4,7 +4,7 @@ namespace MediaWiki\Extension\ArticleRanking\Api;
 use ApiBase;
 use MediaWiki\Extension\ArticleRanking\Captcha;
 use MediaWiki\Extension\ArticleRanking\Vote;
-use MediaWiki\ParamValidator\TypeDef\StringDef;
+use Wikimedia\ParamValidator\TypeDef\StringDef;
 use MediaWiki\Title\Title;
 
 class ApiVoteMessage extends ApiBase {
