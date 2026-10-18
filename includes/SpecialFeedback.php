@@ -18,6 +18,7 @@ use SpecialPage;
  * @ingroup SpecialPage
  */
 class SpecialFeedback extends SpecialPage {
+	/** @var string */
 	protected $target;
 
 	/**

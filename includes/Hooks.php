@@ -15,6 +15,7 @@ class Hooks implements
 	) {
 	}
 
+	/** @inheritDoc */
 	public function onBeforePageDisplay( $out, $skin ): void {
 		$modules = [ 'ext.articleRanking' ];
 
@@ -32,6 +33,7 @@ class Hooks implements
 		}
 	}
 
+	/** @inheritDoc */
 	public function onResourceLoaderGetConfigVars( array &$vars, $skin, Config $config ): void {
 		$vars['wgArticleRankingConfig'] = $this->config->get( 'ArticleRankingConfig' );
 		$vars['wgArticleRankingConfig']['isCaptchaEnabled'] = Captcha::isEnabled();

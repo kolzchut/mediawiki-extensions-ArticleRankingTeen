@@ -31,7 +31,9 @@ use TitleValue;
 
 class FeedbackPager extends TablePager {
 
+	/** @var array */
 	protected $conds;
+	/** @var SpecialPage */
 	protected $page;
 
 	/**

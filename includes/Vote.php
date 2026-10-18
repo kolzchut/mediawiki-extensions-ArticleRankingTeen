@@ -106,6 +106,12 @@ class Vote {
 		];
 	}
 
+	/**
+	 * Alias of getRankingTotals().
+	 *
+	 * @param int $page_id
+	 * @return array|false
+	 */
 	public static function getRank( int $page_id ) {
 		return self::getRankingTotals( $page_id );
 	}

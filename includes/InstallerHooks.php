@@ -11,6 +11,7 @@ use MediaWiki\Installer\Hook\LoadExtensionSchemaUpdatesHook;
  * such hooks since ~MW 1.41.
  */
 class InstallerHooks implements LoadExtensionSchemaUpdatesHook {
+	/** @inheritDoc */
 	public function onLoadExtensionSchemaUpdates( $updater ) {
 		$dir = __DIR__ . '/../sql';
 
