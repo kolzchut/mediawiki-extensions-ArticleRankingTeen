@@ -4,8 +4,8 @@ namespace MediaWiki\Extension\ArticleRanking\Api;
 use ApiBase;
 use MediaWiki\Extension\ArticleRanking\Captcha;
 use MediaWiki\Extension\ArticleRanking\Vote;
-use Wikimedia\ParamValidator\TypeDef\StringDef;
 use MediaWiki\Title\Title;
+use Wikimedia\ParamValidator\TypeDef\StringDef;
 
 class ApiVoteMessage extends ApiBase {
 
@@ -70,6 +70,7 @@ class ApiVoteMessage extends ApiBase {
 		$queryResult->addValue( null, 'ranking', $output );
 	}
 
+	/** @inheritDoc */
 	public function needsToken() {
 		return 'csrf';
 	}
