@@ -10,6 +10,7 @@ use DateTime;
 use ExtensionRegistry;
 use MediaWiki\Extension\ArticleContentArea\ArticleContentArea;
 use MediaWiki\Linker\LinkRenderer;
+use MediaWiki\MediaWikiServices;
 use SpecialPage;
 use TablePager;
 use Title;
@@ -34,10 +35,13 @@ class ArticleRankingPager extends TablePager {
 	 * @param LinkRenderer $linkRenderer
 	 */
 	public function __construct( $form, $conds, LinkRenderer $linkRenderer ) {
-		$dbr = wfGetDB( DB_REPLICA );
+		$dbr = MediaWikiServices::getInstance()
+			->getConnectionProvider()
+			->getReplicaDatabase();
 		if ( $conds[ 'target' ] ) {
-			$pageId = Title::newFromText( $conds[ 'target' ] )->getArticleID();
-			$this->mConds[ 'ranking_page_id' ] = $pageId;
+			$title = Title::newFromText( $conds[ 'target' ] );
+			// An invalid title matches no page, so the report is empty rather than a fatal
+			$this->mConds[ 'ranking_page_id' ] = $title ? $title->getArticleID() : 0;
 		}
 		// @todo add conditions for start/end (timestamp)
 		if ( $conds[ 'start' ] ) {
@@ -158,7 +162,8 @@ class ArticleRankingPager extends TablePager {
 		switch ( $name ) {
 			case 'ranking_page_id':
 				$title = Title::newFromID( $value );
-				return $this->getLinkRenderer()->makeKnownLink( $title );
+				// A page deleted since it was voted on has no title; skip the link rather than fatal
+				return $title ? $this->getLinkRenderer()->makeKnownLink( $title ) : '';
 			case 'sum_positive_percent':
 				$percent = round( $row->sum_positive / $row->sum_total * 100 );
 				return ( $percent . '%' );
