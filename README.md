@@ -74,3 +74,12 @@ To get a page vote count, make a GET request to `http://example.com/api.php?acti
 | Parameter | Type    | Description
 |-----------|---------|------------
 | page_id   | Integer | The page id of the page being queried
+
+The response is a `ranking` object with `success: 1` and a `votes` object:
+
+| Field          | Type    | Description
+|----------------|---------|------------
+| positive_votes | Integer | Number of up-votes
+| negative_votes | Integer | Number of down-votes (a count, not a negative number)
+| total_votes    | Integer | Up-votes plus down-votes; 0 for a page with no votes
+| rank           | Number  | Percentage of up-votes, 0-100; 0 for a page with no votes

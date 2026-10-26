@@ -74,35 +74,53 @@ class Vote {
 	/**
 	 * Get vote totals for a page.
 	 *
-	 * @return array{positive_votes:int,negative_votes:int,total_votes:int,rank:float}|false
+	 * @param int $page_id
+	 * @return array{positive_votes:int,negative_votes:int,total_votes:int,rank:float}
+	 *   See computeTotals(). A page with no votes yields all zeros.
 	 */
 	public static function getRankingTotals( int $page_id ) {
 		$dbr = MediaWikiServices::getInstance()->getConnectionProvider()->getReplicaDatabase();
 
-		$positiveVotes = $dbr->newSelectQueryBuilder()
+		// Sums rather than counts for b/c: rows migrated from the v1 table hold a whole
+		// page's tally in a single row (see ArticleRankingPager::getQueryInfo()).
+		// SUM() over no rows is NULL, which the int casts turn into 0.
+		$positiveVotes = (int)$dbr->newSelectQueryBuilder()
 			->select( 'SUM(ranking_value)' )
 			->from( 'article_rankings2' )
 			->where( [ 'ranking_page_id' => $page_id, 'ranking_value > 0' ] )
 			->caller( __METHOD__ )
 			->fetchField();
-		$negativeVotes = $dbr->newSelectQueryBuilder()
-			->select( 'SUM(ranking_value)' )
+		// Down-votes are stored as negative values; negate them so this is a count
+		$negativeVotes = (int)$dbr->newSelectQueryBuilder()
+			->select( 'SUM(-ranking_value)' )
 			->from( 'article_rankings2' )
-			->where( [ 'ranking_page_id' => $page_id, 'ranking_value' => -1 ] )
+			->where( [ 'ranking_page_id' => $page_id, 'ranking_value < 0' ] )
 			->caller( __METHOD__ )
 			->fetchField();
 
-		if ( $positiveVotes === false && $negativeVotes === false ) {
-			return false;
+		return self::computeTotals( $positiveVotes, $negativeVotes );
+	}
+
+	/**
+	 * Compute the ranking totals from the number of up-votes and down-votes.
+	 *
+	 * @param int $positiveVotes number of up-votes (>= 0)
+	 * @param int $negativeVotes number of down-votes, as a positive count (>= 0)
+	 * @return array{positive_votes:int,negative_votes:int,total_votes:int,rank:float}
+	 *   rank is the percentage of up-votes, 0-100; 0 when there are no votes
+	 */
+	public static function computeTotals( int $positiveVotes, int $negativeVotes ): array {
+		if ( $positiveVotes < 0 || $negativeVotes < 0 ) {
+			throw new InvalidArgumentException( 'Vote counts cannot be negative' );
 		}
 
-		$totalVotes = (int)$positiveVotes + (int)$negativeVotes;
+		$totalVotes = $positiveVotes + $negativeVotes;
 
 		return [
-			'positive_votes' => (int)$positiveVotes,
-			'negative_votes' => (int)$negativeVotes,
+			'positive_votes' => $positiveVotes,
+			'negative_votes' => $negativeVotes,
 			'total_votes'    => $totalVotes,
-			'rank'           => $totalVotes !== 0 ? ( (int)$positiveVotes / $totalVotes ) * 100 : 0.0,
+			'rank'           => $totalVotes > 0 ? ( $positiveVotes / $totalVotes ) * 100.0 : 0.0,
 		];
 	}
 
@@ -110,7 +128,7 @@ class Vote {
 	 * Alias of getRankingTotals().
 	 *
 	 * @param int $page_id
-	 * @return array|false
+	 * @return array{positive_votes:int,negative_votes:int,total_votes:int,rank:float}
 	 */
 	public static function getRank( int $page_id ) {
 		return self::getRankingTotals( $page_id );

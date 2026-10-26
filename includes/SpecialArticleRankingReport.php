@@ -25,15 +25,15 @@ class SpecialArticleRankingReport extends SpecialPage {
 		$this->opts = [];
 		$request = $this->getRequest();
 
-		$this->opts['target']  = $par ?? $request->getVal( 'target' );
+		// Special:ArticleRanking/<page> is shorthand for ?target=<page>; an explicit ?target wins,
+		// so the filter form still works when submitted from a subpage URL
+		$this->opts['target'] = $request->getVal( 'target', $sub );
 		$this->opts['limit'] = $request->getInt( 'limit' );
 
-		$skip = $request->getText( 'offset' ) || $request->getText( 'dir' ) == 'prev';
-		# Offset overrides date selection
-		if ( !$skip ) {
-			$this->opts['start'] = $request->getVal( 'start' );
-			$this->opts['end'] = $request->getVal( 'end' );
-		}
+		// The date range stays in force while paging: the paging links carry it, and every page
+		// has to be cut from the same report
+		$this->opts['start'] = $request->getVal( 'start' );
+		$this->opts['end'] = $request->getVal( 'end' );
 
 		$this->opts['min_rankings'] = $request->getInt( 'min_rankings' );
 		if ( ExtensionRegistry::getInstance()->isLoaded( 'ArticleContentArea' ) ) {
@@ -114,6 +114,8 @@ class SpecialArticleRankingReport extends SpecialPage {
 		$htmlForm = \HTMLForm::factory( 'ooui', $fields, $this->getContext() );
 		$htmlForm
 			->setMethod( 'get' )
+			// Submit to the base page, so the form's target field is the only target
+			->setTitle( $this->getPageTitle() )
 			// When offset is defined, the user is paging through results,
 			// so we hide the form by default to allow users to focus on browsing
 			// rather than defining search parameters
