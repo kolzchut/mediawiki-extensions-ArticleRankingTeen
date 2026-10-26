@@ -30,14 +30,11 @@ class ApiGetVotes extends ApiBase {
 		$params = $this->extractRequestParams();
 
 		$page = $this->getTitleOrPageId( $params );
-		$result = Vote::getRank( $page->getId() );
-
-		if ( $result !== false ) {
-			$output[ 'success' ] = 1;
-			$output[ 'votes' ] = $result;
-		} else {
-			$output[ 'success' ] = 0;
-		}
+		// A page with no votes gets all-zero totals (total_votes = 0), as it always has
+		$output = [
+			'success' => 1,
+			'votes' => Vote::getRank( $page->getId() ),
+		];
 
 		$queryResult->addValue( null, 'ranking', $output );
 	}
