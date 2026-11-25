@@ -178,7 +178,7 @@ class Vote {
 
 		$captchaCfg     = $conf->get( 'ArticleRankingCaptcha' );
 		$templateFile   = $conf->get( 'ArticleRankingTemplateFileName' );
-		$templatePath   = $conf->get( 'ArticleRankingTemplatePath' ) ?: __DIR__ . '/templates';
+		$templatePath   = $conf->get( 'ArticleRankingTemplatePath' ) ?: __DIR__ . '/../templates';
 		$templateParser = new TemplateParser( $templatePath );
 
 		$params = [
