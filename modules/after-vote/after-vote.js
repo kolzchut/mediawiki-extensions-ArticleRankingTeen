@@ -61,12 +61,19 @@
 				id: mw.config.get( 'wgArticleId' ),
 				captchaToken: mw.ranking.captchaToken || null,
 				message: message,
-				vote: Number( mw.ranking.positiveVote )
+				vote: mw.ranking.positiveVote ? 1 : -1
 			} ).fail( function () {
 				$( '.after-voting-button' ).removeAttr( 'disabled' );
 				openMessage( mw.message( 'article-ranking-after-vote-failed' ).text() );
-			} ).done( function () {
-				var $el = $( '<div>' )
+			} ).done( function ( response ) {
+				var $el;
+				// The API answers success: 0 when it did not save the message
+				if ( !( response && response.ranking && response.ranking.success ) ) {
+					$( '.after-voting-button' ).removeAttr( 'disabled' );
+					openMessage( mw.message( 'article-ranking-after-vote-failed' ).text() );
+					return;
+				}
+				$el = $( '<div>' )
 					.addClass( 'vote-message-sent-text' )
 					.html( mw.msg( 'article-ranking-after-vote-success' ) );
 				$( '.after-vote-form' ).addClass( 'vote-message-sent' ).append( $el );
