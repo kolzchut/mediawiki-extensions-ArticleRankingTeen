@@ -168,7 +168,9 @@
 
 	$( function () {
 		$( mw.ranking.$btns ).on( 'click', function () {
-			mw.ranking.$votingMessages.hide(); // In case we already displayed a message before
+			// In case we already displayed a message before. A class, not .hide():
+			// an inline display would keep the next message hidden too.
+			mw.ranking.$votingMessages.removeClass( 'show' );
 			mw.ranking.positiveVote = $( this ).hasClass( 'yes' );
 			mw.ranking.$btns.attr( 'disabled', true );
 			// $( this ).prepend( mw.ranking.$statusIcon );
