@@ -50,6 +50,11 @@
 		"ext.articleRanking-after-vote": {
 			"scripts": "modules/after-vote/after-vote.js",
 			"styles": "modules/after-vote/after-vote.less",
+			"dependencies": [
+				"ext.articleRanking",
+				"mediawiki.api",
+				"oojs-ui-windows"
+			],
 			"messages": [
 				"article-ranking-after-vote-failed",
 				"article-ranking-after-vote-success",

@@ -25,16 +25,17 @@
 					</button>
 				</div>
 			</div>
-			{{^is-after-vote-form}}
-				<div class="voting-messages">
-					<div class="voting-messages-success">
-						{{ranking-vote-success}}
-					</div>
-					<div class="voting-messages-failure">
-						{{ranking-vote-fail}}
-					</div>
+			<div class="voting-messages">
+				{{! With the after-vote form, a successful vote opens the form instead of a message }}
+				{{^is-after-vote-form}}
+				<div class="voting-messages-success">
+					{{ranking-vote-success}}
 				</div>
-			{{/is-after-vote-form}}
+				{{/is-after-vote-form}}
+				<div class="voting-messages-failure">
+					{{ranking-vote-fail}}
+				</div>
+			</div>
 			{{#is-captcha-enabled}}
 			{{! Rendered explicitly by ext.articleRanking, which sets its options }}
 			<div class="ranking-turnstile"

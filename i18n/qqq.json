@@ -40,6 +40,6 @@
 	"article-ranking-feedbacklist-no-results": "Shown on [[Special:ArticleRankingFeedback]] when no message matches the filter.",
 	"right-articleranking-view-report": "{{doc-right|articleranking-view-report}}",
 	"action-articleranking-view-report": "{{doc-action|articleranking-view-report}}",
-	"right-upload": "Defined by this extension under this key, with a description of the viewfeedback right.",
+	"right-viewfeedback": "{{doc-right|viewfeedback}}",
 	"action-viewfeedback": "{{doc-action|viewfeedback}}"
 }
