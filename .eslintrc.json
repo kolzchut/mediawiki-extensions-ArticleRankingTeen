@@ -5,6 +5,7 @@
 	],
 	"globals": {
 		"mw": false,
+		"OO": false,
 		"turnstile": false
 	},
 	"rules": {

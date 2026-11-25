@@ -1,6 +1,11 @@
 /* eslint-env node, es6 */
 module.exports = function ( grunt ) {
 	var conf = grunt.file.readJSON( 'extension.json' );
+	conf.MessagesDirs.options = {
+		// The key article-ranking-after-vote-OK is in use, and renaming it would
+		// be a runtime change, so only the initial letter of a key is checked.
+		requireLowerCase: 'initial'
+	};
 	grunt.loadNpmTasks( 'grunt-banana-checker' );
 	grunt.loadNpmTasks( 'grunt-eslint' );
 	grunt.loadNpmTasks( 'grunt-stylelint' );

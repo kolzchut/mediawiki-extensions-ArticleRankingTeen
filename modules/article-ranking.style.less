@@ -25,9 +25,10 @@
 		.fa {
 			margin-right: 5px;
 		}
-		&:not(.on-call) .ranking-on-request,
-		&.on-call > *:not(.ranking-on-request),
-		&:not(.after-success-call) .ranking-just-after,
+
+		&:not( .on-call ) .ranking-on-request,
+		&.on-call > *:not( .ranking-on-request ),
+		&:not( .after-success-call ) .ranking-just-after,
 		&.after-success-call .ranking-just-before {
 			display: none;
 		}
@@ -42,13 +43,13 @@
 		padding-left: 10px;
 	}
 
-	@media screen and (min-width: 768px) {
+	@media screen and ( min-width: 768px ) {
 		.sub-section1 {
 			min-width: 53%;
 		}
 	}
 
-	@media screen and (max-width: 767px) {
+	@media screen and ( max-width: 767px ) {
 		/* This part needs to be copied into Helena, not be here
 		.sub-section1 {
 			width: 100%;
@@ -64,22 +65,24 @@
 			display: none;
 			 */
 			// The following rules are useless when hidden - relevant in the future when we show this
-		    border-top: 2px solid #b7b7b7;
+			border-top: 2px solid #b7b7b7;
 			padding-top: 25px;
 		}
 
 		.ranking-btn {
 			margin: 0;
+
 			&.no {
 				margin: 0 0 0 10px;
 			}
 		}
 	}
 }
+
 .voting-messages {
-	&:not(.show),
-	&:not(.voting-messages-wrp-success) .voting-messages-success,
-	&:not(.voting-messages-wrp-failure) .voting-messages-failure{
+	&:not( .show ),
+	&:not( .voting-messages-wrp-success ) .voting-messages-success,
+	&:not( .voting-messages-wrp-failure ) .voting-messages-failure {
 		display: none;
 	}
 }
