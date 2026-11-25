@@ -5,6 +5,8 @@
 		var rect = el.getBoundingClientRect();
 		return ( rect.top > -1 && rect.bottom <= $( window ).height() );
 	}
+	// Not called at present: the resize handler below is empty.
+	// eslint-disable-next-line no-unused-vars
 	function scrollIfFocusedTextareaNotInFold() {
 		var focusedTextarea = $( '.after-vote-form textarea:visible:focus' ),
 			scrollTopOffset;
