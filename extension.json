@@ -90,6 +90,14 @@
 			"viewfeedback": true
 		}
 	},
+	"RateLimits": {
+		"articleranking-vote": {
+			"ip": [ 10, 60 ],
+			"subnet": [ 30, 60 ],
+			"newbie": [ 10, 60 ],
+			"user": [ 30, 60 ]
+		}
+	},
 	"ExtensionMessagesFiles": {
 		"ArticleRankingAlias": "ArticleRanking.i18n.alias.php"
 	},
