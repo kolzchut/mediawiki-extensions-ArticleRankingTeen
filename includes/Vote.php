@@ -215,8 +215,30 @@ class Vote {
 	}
 
 	/**
+	 * Map a vote (-1 or 1, as the API takes it) to the value the feedback
+	 * table stores.
+	 *
+	 * `positive_or_negative` has always held 1 for a positive vote and 0 for
+	 * a negative one, and Special:ArticleRankingFeedback shows and sorts that
+	 * value as stored, so a negative vote keeps being written as 0 rather
+	 * than as a second spelling of the same answer.
+	 *
+	 * @param int $vote -1 or 1
+	 * @return int 0 or 1
+	 */
+	public static function feedbackVoteValue( int $vote ): int {
+		if ( !in_array( $vote, [ -1, 1 ], true ) ) {
+			throw new InvalidArgumentException( '$vote can only be -1 or 1' );
+		}
+		return $vote === 1 ? 1 : 0;
+	}
+
+	/**
 	 * Save a free-form vote message.
 	 *
+	 * @param int $page_id
+	 * @param int $vote -1 or 1
+	 * @param string $message
 	 * @return bool
 	 */
 	public static function saveVoteMessage( int $page_id, int $vote, string $message ) {
@@ -225,7 +247,7 @@ class Vote {
 		$dbw->newInsertQueryBuilder()
 			->insertInto( 'article_rankings_votes_messages' )
 			->row( [
-				'positive_or_negative'   => $vote,
+				'positive_or_negative'   => self::feedbackVoteValue( $vote ),
 				'votes_messages'         => $message,
 				'votes_messages_page_id' => $page_id,
 				'votes_timestamp'        => $dbw->timestamp( wfTimestampNow() ),

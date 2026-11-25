@@ -8,6 +8,7 @@ use MediaWikiUnitTestCase;
 
 /**
  * @covers \MediaWiki\Extension\ArticleRanking\Vote::computeTotals
+ * @covers \MediaWiki\Extension\ArticleRanking\Vote::feedbackVoteValue
  * @group ArticleRanking
  */
 class VoteTest extends MediaWikiUnitTestCase {
@@ -45,5 +46,27 @@ class VoteTest extends MediaWikiUnitTestCase {
 	public function testComputeTotalsRejectsNegativeCounts(): void {
 		$this->expectException( InvalidArgumentException::class );
 		Vote::computeTotals( 3, -2 );
+	}
+
+	public function testFeedbackVoteValueKeepsTheStoredMeaning(): void {
+		// The feedback table has always stored 1 for yes and 0 for no
+		$this->assertSame( 1, Vote::feedbackVoteValue( 1 ) );
+		$this->assertSame( 0, Vote::feedbackVoteValue( -1 ) );
+	}
+
+	public static function provideInvalidFeedbackVotes(): array {
+		return [
+			'zero' => [ 0 ],
+			'two' => [ 2 ],
+			'minus two' => [ -2 ],
+		];
+	}
+
+	/**
+	 * @dataProvider provideInvalidFeedbackVotes
+	 */
+	public function testFeedbackVoteValueRejectsOtherValues( int $vote ): void {
+		$this->expectException( InvalidArgumentException::class );
+		Vote::feedbackVoteValue( $vote );
 	}
 }
