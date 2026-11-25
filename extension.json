@@ -10,7 +10,7 @@
 		"Dror S. [FFS] ([https://www.kolzchut.org.il Kol-Zchut])"
 	],
 	"descriptionmsg": "articleranking-desc",
-	"url": "https://github.com/kolzchut/mediawiki-extensions-ArticleRanking",
+	"url": "https://github.com/kolzchut/mediawiki-extensions-ArticleRankingTeen",
 	"license-name": "MIT",
 	"type": "other",
 	"AutoloadNamespaces": {
