@@ -55,29 +55,38 @@
 		$( '.after-voting-button' ).off( 'click' ).on( 'click', function () {
 			var message = $( '.after-vote-form textarea:visible' ).val();
 
-			$( '.after-voting-button' ).attr( 'disabled', 'disabled' );
-			return new mw.Api().postWithToken( 'csrf', {
-				action: 'rank-vote-message',
-				id: mw.config.get( 'wgArticleId' ),
-				captchaToken: mw.ranking.captchaToken || null,
-				message: message,
-				vote: mw.ranking.positiveVote ? 1 : -1
-			} ).fail( function () {
+			function informFailedMessage() {
 				$( '.after-voting-button' ).removeAttr( 'disabled' );
 				openMessage( mw.message( 'article-ranking-after-vote-failed' ).text() );
-			} ).done( function ( response ) {
-				var $el;
-				// The API answers success: 0 when it did not save the message
-				if ( !( response && response.ranking && response.ranking.success ) ) {
-					$( '.after-voting-button' ).removeAttr( 'disabled' );
-					openMessage( mw.message( 'article-ranking-after-vote-failed' ).text() );
-					return;
-				}
-				$el = $( '<div>' )
-					.addClass( 'vote-message-sent-text' )
-					.html( mw.msg( 'article-ranking-after-vote-success' ) );
-				$( '.after-vote-form' ).addClass( 'vote-message-sent' ).append( $el );
-			} );
+			}
+
+			function sendMessage( captchaToken ) {
+				return new mw.Api().postWithToken( 'csrf', {
+					action: 'rank-vote-message',
+					id: mw.config.get( 'wgArticleId' ),
+					captchaToken: captchaToken || null,
+					message: message,
+					vote: mw.ranking.positiveVote ? 1 : -1
+				} ).fail( informFailedMessage ).done( function ( response ) {
+					var $el;
+					// The API answers success: 0 when it did not save the message
+					if ( !( response && response.ranking && response.ranking.success ) ) {
+						informFailedMessage();
+						return;
+					}
+					$el = $( '<div>' )
+						.addClass( 'vote-message-sent-text' )
+						.html( mw.msg( 'article-ranking-after-vote-success' ) );
+					$( '.after-vote-form' ).addClass( 'vote-message-sent' ).append( $el );
+				} );
+			}
+
+			$( '.after-voting-button' ).attr( 'disabled', 'disabled' );
+			if ( mw.ranking.config.isCaptchaEnabled === true ) {
+				// A token is single-use, and the vote spent the last one
+				return mw.ranking.getCaptchaToken().then( sendMessage, informFailedMessage );
+			}
+			return sendMessage();
 		} );
 	} );
 }() );

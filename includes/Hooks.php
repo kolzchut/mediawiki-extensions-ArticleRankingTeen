@@ -26,11 +26,9 @@ class Hooks implements
 			$modules[] = 'ext.articleRanking-after-vote';
 		}
 
+		// With the captcha on, the module loads Turnstile itself and renders the
+		// widget explicitly, once it can receive the token.
 		$out->addModules( $modules );
-
-		if ( Captcha::isEnabled() ) {
-			$out->addHeadItem( 'captcha', Captcha::getScript() );
-		}
 	}
 
 	/** @inheritDoc */

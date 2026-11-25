@@ -10,6 +10,18 @@ invisible-style ("execute") mode, which requires a site key and a secret key.
 On the Kol-Zchut platform one shared widget is used, with this service
 identified by the `cData` value `articleranking-teen`.
 
+The `ext.articleRanking` module loads Turnstile and renders the widget
+explicitly into the template's `.ranking-turnstile` element, and asks it for a
+fresh token for each vote and for each after-vote message, as a token can be
+used only once. A skin template that replaces `templates/voting.mustache` has
+to keep that element and its `data-sitekey` and `data-language` attributes.
+
+Cloudflare's [test keys](https://developers.cloudflare.com/turnstile/troubleshooting/testing/)
+work only on a development wiki (`MW_ENVIRONMENT=development`): siteverify
+answers the always-pass test secret with the hostname `example.com` and no
+`cData`, so the server accepts it there without those two checks. Anywhere
+else, and for a real secret, both are checked.
+
 ## Configuration
 
 | Main Key                 | sub-key                | default                 | description
